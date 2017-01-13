@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Swagger UI</title>
+    <link rel="icon" type="image/png" href="/docs/static/images/favicon-32x32.png" sizes="32x32"/>
+    <link rel="icon" type="image/png" href="/docs/static/images/favicon-16x16.png" sizes="16x16"/>
+    <link href='./docs/static/css/typography.css' media='screen' rel='stylesheet' type='text/css'/>
+    <link href='./docs/static/css/reset.css' media='screen' rel='stylesheet' type='text/css'/>
+    <link href='./docs/static/css/screen.css' media='screen' rel='stylesheet' type='text/css'/>
+    <link href='./docs/static/css/reset.css' media='print' rel='stylesheet' type='text/css'/>
+    <link href='./docs/static/css/print.css' media='print' rel='stylesheet' type='text/css'/>
+    <script src='./docs/static/lib/jquery-1.8.0.min.js' type='text/javascript'></script>
+    <script src='./docs/static/lib/jquery.slideto.min.js' type='text/javascript'></script>
+    <script src='./docs/static/lib/jquery.wiggle.min.js' type='text/javascript'></script>
+    <script src='./docs/static/lib/jquery.ba-bbq.min.js' type='text/javascript'></script>
+    <script src='./docs/static/lib/handlebars-2.0.0.js' type='text/javascript'></script>
+    <script src='./docs/static/lib/underscore-min.js' type='text/javascript'></script>
+    <script src='./docs/static/lib/backbone-min.js' type='text/javascript'></script>
+    <script src='./docs/static/swagger-ui.min.js' type='text/javascript'></script>
+    <script src='./docs/static/lib/highlight.7.3.pack.js' type='text/javascript'></script>
+    <script src='./docs/static/lib/marked.js' type='text/javascript'></script>
+    <script src='./docs/static/lib/swagger-oauth.js' type='text/javascript'></script>
+
+    <script type="text/javascript">
+      $(function () {
+        var API_DOCS_PREFIX = "/api-docs/";
+        var API_DOCS_POSTFIX = "?group=public";
+        var API_QUERY_PARAMETER = "&api=";
+        var PLATFORM_HOST = "https://platformdev.cloud.coveo.com";
+
+        function addApi(label, value) {
+          if (value.length > API_DOCS_PREFIX.length) {
+            $('#api_list').append('<option value="' + value + '">' + label + '</option>');
+          }
+        }
+
+        addApi('Platform', PLATFORM_HOST + API_DOCS_PREFIX + 'Platform');
+        addApi('Index', PLATFORM_HOST + API_DOCS_PREFIX + 'Index');
+        addApi('SecurityCache', PLATFORM_HOST + API_DOCS_PREFIX + 'SecurityCache');
+        addApi('Source', PLATFORM_HOST + API_DOCS_PREFIX + 'Source');
+        addApi('Activity', PLATFORM_HOST + API_DOCS_PREFIX + 'Activity');
+        addApi('Privilege', PLATFORM_HOST + API_DOCS_PREFIX + 'Privilege');
+        addApi('Usage Analytics', PLATFORM_HOST + API_DOCS_PREFIX + 'UsageAnalytics');
+        addApi('PushAPI', PLATFORM_HOST + API_DOCS_PREFIX + 'PushApi');
+        addApi('Extension', PLATFORM_HOST + API_DOCS_PREFIX + 'Extension');
+
+        $('#api_list').val(PLATFORM_HOST + API_DOCS_PREFIX + document.location.search.split("&").pop().split("=").pop());
+
+
+        window.swaggerUi = new SwaggerUi({
+          url: $('#api_list').val(),
+          dom_id: "swagger-ui-container",
+          supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
+          onComplete: function (swaggerApi, swaggerUi) {
+            console.log("Loaded SwaggerUI");
+            if (typeof initOAuth == "function") {
+              initOAuth({
+                clientId: "Swagger",
+                realm: "Platform",
+                appName: "Coveo Cloud Platform"
+              });
+            }
+          },
+          onFailure: function (data) {
+            console.log("Unable to Load SwaggerUI");
+          },
+          docExpansion: "none",
+          apisSorter: function (a, b) {
+            if (a.name.indexOf("/") !== -1 && b.name.indexOf("/") !== -1) {
+              var id1 = a.name.split("/");
+              var id2 = b.name.split("/");
+
+              // Sort by version in descending alphabetical order
+              // Followed by sort by resource ascending alphabetical order
+              if (id1[0] < id2[0]) return 1;
+              if (id1[0] > id2[0]) return -1;
+              if (id1[1] < id2[1]) return -1;
+              if (id1[1] > id2[1]) return 1;
+              return 0;
+            } else {
+              return a.name.localeCompare(b.name);
+            }
+          },
+          showRequestHeaders: false,
+          validatorUrl: null
+        });
+
+        /**
+         * Replaces state by appending the API_DOCS_POSTFIX as well as the &api=apiName condition to the URL query
+         * string.
+         * @param apiName The name of the currently selected API.
+         */
+        function replaceURL(apiName) {
+          history.replaceState("", "", API_DOCS_POSTFIX + API_QUERY_PARAMETER + apiName);
+        }
+
+        window.swaggerUi.load();
+
+        // After swaggerUI has loaded, replace the state to reflect the current API and display the correct anchor.
+        var n = $('#api_list').val().split("/").pop() + document.location.hash;
+        replaceURL(n);
+
+        // When selected API changes, update URL accordingly.
+        $('#api_list').change(function () {
+          window.swaggerUi.updateSwaggerUi({url: this.value});
+          replaceURL(this.value.split('/').pop());
+        });
+      });
+    </script>
+</head>
+
+<body class="swagger-section">
+<div id='header'>
+    <div class="swagger-ui-wrap">
+        <a id="logo" href="http://www.coveo.com">Coveo Cloud Platform API</a>
+        <form id='api_selector'>
+            <div class='input'>
+                <select id='api_list' name='api_list'>
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
+
+
+<div id="message-bar" class="swagger-ui-wrap">&nbsp;</div>
+<div id="swagger-ui-container" class="swagger-ui-wrap"></div>
+</body>
+</html>
