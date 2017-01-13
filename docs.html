@@ -25,7 +25,7 @@
       $(function () {
         var API_DOCS_PREFIX = "/api-docs/";
         var API_DOCS_POSTFIX = "?group=public";
-        var API_QUERY_PARAMETER = "&api=";
+        var API_QUERY_PARAMETER = "api";
         var PLATFORM_HOST = "https://platformdev.cloud.coveo.com";
 
         function addApi(label, value) {
@@ -44,7 +44,19 @@
         addApi('PushAPI', PLATFORM_HOST + API_DOCS_PREFIX + 'PushApi');
         addApi('Extension', PLATFORM_HOST + API_DOCS_PREFIX + 'Extension');
 
-        $('#api_list').val(PLATFORM_HOST + API_DOCS_PREFIX + document.location.search.split("&").pop().split("=").pop());
+        /**
+         * Parses the URL query string and returns the corresponding parameter value if able.
+         * @param {string} parameter The query parameter whose value should be retrieved from the URL query string.
+         * @returns {*} The parameter value, or `undefined` if parameter was not found in the URL query string.
+         */
+        function getURLQueryParameterValue(parameter) {
+
+          return document.location.search.includes(parameter) ?
+            document.location.search.split(parameter + "=").pop().split("&").shift() :
+            undefined;
+        }
+
+        $('#api_list').val(PLATFORM_HOST + API_DOCS_PREFIX + getURLQueryParameterValue(API_QUERY_PARAMETER));
 
 
         window.swaggerUi = new SwaggerUi({
@@ -86,19 +98,18 @@
         });
 
         /**
-         * Replaces state by appending the API_DOCS_POSTFIX as well as the &api=apiName condition to the URL query
+         * Replaces the state by appending the API_DOCS_POSTFIX as well as the &api=apiName condition to the URL query
          * string.
          * @param apiName The name of the currently selected API.
          */
         function replaceURL(apiName) {
-          history.replaceState("", "", API_DOCS_POSTFIX + API_QUERY_PARAMETER + apiName);
+          history.replaceState("", "", API_DOCS_POSTFIX + "&" + API_QUERY_PARAMETER + "=" + apiName);
         }
 
         window.swaggerUi.load();
 
         // After swaggerUI has loaded, replace the state to reflect the current API and display the correct anchor.
-        var n = $('#api_list').val().split("/").pop() + document.location.hash;
-        replaceURL(n);
+        replaceURL($('#api_list').val().split("/").pop() + document.location.hash);
 
         // When selected API changes, update URL accordingly.
         $('#api_list').change(function () {
