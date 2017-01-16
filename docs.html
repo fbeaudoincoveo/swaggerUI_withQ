@@ -23,10 +23,37 @@
 
     <script type="text/javascript">
       $(function () {
+
         var API_DOCS_PREFIX = "/api-docs/";
         var API_DOCS_POSTFIX = "?group=public";
         var API_QUERY_PARAMETER = "api";
         var PLATFORM_HOST = "https://platformdev.cloud.coveo.com";
+        var TEST_EXTENSION = "";
+
+        var TESTING_LOCALLY = false; // Set to `true` to generate site from local/custom Swagger files.
+        var TEST_CUSTOM_PATH = ""; // Example: `/fbeaudoincoveo/swaggerUI_withQ/tree/master/api-docs-tests/`.
+        var TEST_CUSTOM_HOST = ""; // Example: `https://github.com`.
+
+        if (TESTING_LOCALLY)
+        {
+          API_DOCS_PREFIX = TEST_CUSTOM_PATH ?
+            TEST_CUSTOM_PATH :
+            "/api-docs-tests/";
+
+          API_DOCS_POSTFIX = "";
+
+          if (TEST_CUSTOM_HOST) {
+            PLATFORM_HOST = TEST_CUSTOM_HOST
+          }
+
+          else {
+            var temp = window.location.pathname.split("/");
+            temp.pop();
+            PLATFORM_HOST = temp.join("/");
+          }
+
+          TEST_EXTENSION = ".json"
+        }
 
         function addApi(label, value) {
           if (value.length > API_DOCS_PREFIX.length) {
@@ -34,15 +61,15 @@
           }
         }
 
-        addApi('Platform', PLATFORM_HOST + API_DOCS_PREFIX + 'Platform');
-        addApi('Index', PLATFORM_HOST + API_DOCS_PREFIX + 'Index');
-        addApi('SecurityCache', PLATFORM_HOST + API_DOCS_PREFIX + 'SecurityCache');
-        addApi('Source', PLATFORM_HOST + API_DOCS_PREFIX + 'Source');
-        addApi('Activity', PLATFORM_HOST + API_DOCS_PREFIX + 'Activity');
-        addApi('Privilege', PLATFORM_HOST + API_DOCS_PREFIX + 'Privilege');
-        addApi('Usage Analytics', PLATFORM_HOST + API_DOCS_PREFIX + 'UsageAnalytics');
-        addApi('PushAPI', PLATFORM_HOST + API_DOCS_PREFIX + 'PushApi');
-        addApi('Extension', PLATFORM_HOST + API_DOCS_PREFIX + 'Extension');
+          addApi('Platform', PLATFORM_HOST + API_DOCS_PREFIX + 'Platform' + TEST_EXTENSION);
+          addApi('Index', PLATFORM_HOST + API_DOCS_PREFIX + 'Index' + TEST_EXTENSION);
+          addApi('Security Cache', PLATFORM_HOST + API_DOCS_PREFIX + 'SecurityCache' + TEST_EXTENSION);
+          addApi('Source', PLATFORM_HOST + API_DOCS_PREFIX + 'Source' + TEST_EXTENSION);
+          addApi('Activity', PLATFORM_HOST + API_DOCS_PREFIX + 'Activity' + TEST_EXTENSION);
+          addApi('Privilege', PLATFORM_HOST + API_DOCS_PREFIX + 'Privilege' + TEST_EXTENSION);
+          addApi('Usage Analytics', PLATFORM_HOST + API_DOCS_PREFIX + 'UsageAnalytics' + TEST_EXTENSION);
+          addApi('Push', PLATFORM_HOST + API_DOCS_PREFIX + 'PushApi' + TEST_EXTENSION);
+          addApi('Extension', PLATFORM_HOST + API_DOCS_PREFIX + 'Extension' + TEST_EXTENSION);
 
         /**
          * Parses the URL query string and returns the corresponding parameter value if able.
@@ -103,7 +130,13 @@
          * @param apiName The name of the currently selected API.
          */
         function replaceURL(apiName) {
-          history.replaceState("", "", API_DOCS_POSTFIX + "&" + API_QUERY_PARAMETER + "=" + apiName);
+          if (TESTING_LOCALLY) {
+            history.replaceState("", "", API_DOCS_POSTFIX + "?" + API_QUERY_PARAMETER + "=" + apiName);
+          }
+
+          else {
+            history.replaceState("", "", API_DOCS_POSTFIX + "&" + API_QUERY_PARAMETER + "=" + apiName);
+          }
         }
 
         window.swaggerUi.load();
