@@ -91,6 +91,40 @@
           dom_id: "swagger-ui-container",
           supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
           onComplete: function (swaggerApi, swaggerUi) {
+
+            // Temporarily patches the problem with anchors in the Usage Analytics API.
+            // This patch is not very robust, as it heavily depends on resource/tag naming format.
+            // The patch will work as long as the resource/tag names match /\w\/\w(\/)?
+            // The best solution would be to fix the resource names in the Swagger, by eliminating all "/" from
+            // resource names and associated tags.
+            // This solution also does not scroll very beautifully to anchors in the page.
+            if ($('#api_list').val().split("/").pop() == !TESTING_LOCALLY && 'UsageAnalytics') {
+
+              document.querySelectorAll("a.toggleOperation").forEach(function(element) {
+                element.href = element.hash.split("%2F").join("/").split("//").join("/");
+              });
+
+              if (document.location.hash) {
+                var temp = document.location.hash.split("/");
+                temp.pop();
+                temp.shift();
+
+                var resourceId = temp.join("/");
+
+                temp = $('a.collapseResource[href="#"][data-id="' + resourceId + '"]');
+                var resource = temp.length > 0 ?
+                  temp :
+                  $('a.collapseResource[href="#"][data-id="' + resourceId.split("/").concat("").join("/") + '"]');
+                resource.click();
+
+                var operation = $('ul.options li a.toggleOperation[href="' + document.location.hash + '"]');
+                operation.click();
+                setTimeout(function() {
+                  $(window).scrollTop(operation.parents('div.heading').offset().top);
+                }, 500)
+              }
+            }
+
             console.log("Loaded SwaggerUI");
             if (typeof initOAuth == "function") {
               initOAuth({

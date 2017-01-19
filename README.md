@@ -13,7 +13,7 @@ If you want to test from locally stored custom JSON Swagger files, you can simpl
 If you would rather test from remotely stored custom JSON Swagger files or from JSON Swagger files stored under another
 local path, then you can easily change the TEST_CUSTOM_PATH and/or TEST_CUSTOM_HOST to suit your needs.
 
-In any case, the custom JSON Swagger files names have to map correctly to the original APIs. Thus, files with the
+In any case, the custom JSON Swagger file names have to map correctly to the original APIs. Thus, files with the
 following names can very easily be tested:
 
 - Platform.json
